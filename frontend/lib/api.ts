@@ -2,6 +2,9 @@
 // relative URLs so the Next.js rewrite proxy handles dev traffic correctly.
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 
+// Static mode: set NEXT_PUBLIC_STATIC_MODE=true for GitHub Pages builds
+const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+
 export type RiskLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type CandidateType = "SOCIAL_PROFILE" | "MOBILE_APP";
 export type CaseStatus =
@@ -210,6 +213,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   candidates: (filters: Record<string, string | number | undefined> = {}) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.candidates(filters); }
     const params = new URLSearchParams();
     Object.entries({ page: 1, page_size: 100, ...filters }).forEach(
       ([key, value]) => {
@@ -219,12 +223,20 @@ export const api = {
     );
     return request<PageResult<Candidate>>(`/api/v1/candidates/?${params}`);
   },
-  candidate: (id: string) =>
-    request<CandidateDetail>(`/api/v1/candidates/${encodeURIComponent(id)}`),
-  brands: () => request<Brand[]>("/api/v1/brands/"),
-  brandSummary: (id: string) =>
-    request<BrandSummary>(`/api/v1/brands/${encodeURIComponent(id)}/summary`),
+  candidate: (id: string) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.candidate(id); }
+    return request<CandidateDetail>(`/api/v1/candidates/${encodeURIComponent(id)}`);
+  },
+  brands: () => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.brands(); }
+    return request<Brand[]>("/api/v1/brands/");
+  },
+  brandSummary: (id: string) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.brandSummary(id); }
+    return request<BrandSummary>(`/api/v1/brands/${encodeURIComponent(id)}/summary`);
+  },
   cases: (filters: Record<string, string | number | undefined> = {}) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.cases(filters); }
     const params = new URLSearchParams();
     Object.entries({ page: 1, page_size: 100, ...filters }).forEach(
       ([key, value]) => {
@@ -234,8 +246,10 @@ export const api = {
     );
     return request<PageResult<CaseRecord>>(`/api/v1/cases/?${params}`);
   },
-  case: (id: string) =>
-    request<CaseRecord>(`/api/v1/cases/${encodeURIComponent(id)}`),
+  case: (id: string) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.case(id); }
+    return request<CaseRecord>(`/api/v1/cases/${encodeURIComponent(id)}`);
+  },
   createCase: (data: {
     candidate_id: string;
     brand_id: string;
@@ -243,31 +257,48 @@ export const api = {
     description?: string;
     priority: RiskLevel;
     created_by: string;
-  }) =>
-    request<CaseRecord>("/api/v1/cases/", {
+  }) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.createCase(data); }
+    return request<CaseRecord>("/api/v1/cases/", {
       method: "POST",
       body: JSON.stringify(data),
-    }),
-  updateCase: (id: string, status: CaseStatus) =>
-    request<CaseRecord>(`/api/v1/cases/${encodeURIComponent(id)}`, {
+    });
+  },
+  updateCase: (id: string, status: CaseStatus) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.updateCase(id, status); }
+    return request<CaseRecord>(`/api/v1/cases/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: JSON.stringify({ status }),
-    }),
-  analytics: () => request<Analytics>("/api/v1/analytics/overview"),
-  trends: () => request<TrendPoint[]>("/api/v1/analytics/trends"),
-  analyze: (id: string) =>
-    request<Investigation>(
+    });
+  },
+  analytics: () => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.analytics(); }
+    return request<Analytics>("/api/v1/analytics/overview");
+  },
+  trends: () => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.trends(); }
+    return request<TrendPoint[]>("/api/v1/analytics/trends");
+  },
+  analyze: (id: string) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.analyze(id); }
+    return request<Investigation>(
       `/api/v1/investigation/candidates/${encodeURIComponent(id)}/analyze`,
       { method: "POST" },
-    ),
-  ask: (id: string, question: string) =>
-    request<AnalystAnswer>(
+    );
+  },
+  ask: (id: string, question: string) => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.ask(id, question); }
+    return request<AnalystAnswer>(
       `/api/v1/investigation/candidates/${encodeURIComponent(id)}/ask`,
       { method: "POST", body: JSON.stringify({ question }) },
-    ),
-  demoStatus: () => request<{ seeded: boolean; total_candidates?: number }>(
-    "/api/v1/demo/status",
-  ),
-  seedDemo: () =>
-    request<{ message: string }>("/api/v1/demo/seed", { method: "POST" }),
+    );
+  },
+  demoStatus: () => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.demoStatus(); }
+    return request<{ seeded: boolean; total_candidates?: number }>("/api/v1/demo/status");
+  },
+  seedDemo: () => {
+    if (STATIC_MODE) { const { staticApi } = require("./static-api"); return staticApi.seedDemo(); }
+    return request<{ message: string }>("/api/v1/demo/seed", { method: "POST" });
+  },
 };
