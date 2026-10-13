@@ -1,0 +1,95 @@
+version: "3.9"
+
+# ============================================================
+# BrandShield AI — Docker Compose
+#
+# SERVICES:
+#   postgres  - PostgreSQL database (always needed)
+#   backend   - FastAPI backend (port 8000)
+#   frontend  - Next.js frontend (port 3000)
+#
+# QUICK START (full stack):
+#   docker-compose up -d
+#
+# ACCESS:
+#   Frontend : http://localhost:3000
+#   Backend  : http://localhost:8000
+#   API docs : http://localhost:8000/docs
+#
+# LAN ACCESS (from another device on the same network):
+#   Find your PC's local IP:  ipconfig (Windows) | ifconfig (macOS/Linux)
+#   Then open:  http://<YOUR-LAN-IP>:3000
+#   Backend URL for LAN: set NEXT_PUBLIC_API_BASE_URL=http://<YOUR-LAN-IP>:8000
+#
+# STOP:
+#   docker-compose down
+#
+# WIPE DATA:
+#   docker-compose down -v
+# ============================================================
+
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: brandshield_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-brandshield}
+      POSTGRES_USER: ${POSTGRES_USER:-brandshield}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-brandshield_dev_password}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-brandshield} -d ${POSTGRES_DB:-brandshield}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: brandshield_backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-brandshield}:${POSTGRES_PASSWORD:-brandshield_dev_password}@postgres:5432/${POSTGRES_DB:-brandshield}
+      APP_ENV: ${APP_ENV:-development}
+      APP_DEBUG: ${APP_DEBUG:-true}
+      APP_SECRET_KEY: ${APP_SECRET_KEY:-change-me-in-production}
+      DEMO_MODE: ${DEMO_MODE:-true}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
+      AI_PROVIDER: ${AI_PROVIDER:-}
+      AI_API_KEY: ${AI_API_KEY:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://localhost:8000/health')\""]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: brandshield_frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  pgdata:
+    name: brandshield_pgdata

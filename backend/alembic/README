@@ -1,0 +1,14 @@
+Alembic database migration scripts for BrandShield AI.
+
+Commands:
+  Create a new migration:
+    alembic revision --autogenerate -m "description"
+
+  Apply all pending migrations:
+    alembic upgrade head
+
+  Rollback one migration:
+    alembic downgrade -1
+
+  View migration history:
+    alembic history

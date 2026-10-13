@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BrandShield API Debug</title>
+</head>
+<body>
+    <h1>BrandShield API Connection Debug</h1>
+    <div id="results"></div>
+    <button onclick="testAPI()">Test Backend Connection</button>
+
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<p>Testing backend connection...</p>';
+            
+            try {
+                // Test health endpoint first
+                const healthResponse = await fetch('http://localhost:8000/health');
+                const healthData = await healthResponse.json();
+                results.innerHTML += `<p>✅ Health Check: ${healthData.status}</p>`;
+                
+                // Test analytics endpoint
+                const analyticsResponse = await fetch('http://localhost:8000/api/v1/analytics/overview');
+                const analyticsData = await analyticsResponse.json();
+                results.innerHTML += `<p>✅ Analytics: ${analyticsData.total_candidates} candidates</p>`;
+                
+                // Test candidates endpoint
+                const candidatesResponse = await fetch('http://localhost:8000/api/v1/candidates/?page=1&page_size=3');
+                const candidatesData = await candidatesResponse.json();
+                results.innerHTML += `<p>✅ Candidates: ${candidatesData.items.length} items returned</p>`;
+                
+                results.innerHTML += '<p><strong>🎉 All API calls successful!</strong></p>';
+                
+            } catch (error) {
+                results.innerHTML += `<p>❌ Error: ${error.message}</p>`;
+                console.error('API Test Error:', error);
+            }
+        }
+
+        // Auto-test on load
+        window.onload = () => {
+            testAPI();
+        };
+    </script>
+</body>
+</html>
