@@ -266,3 +266,8 @@ Scores are fully deterministic — calculated from 7 weighted signals:
 ---
 
 *BrandShield AI — Hackathon Demo · Synthetic Dataset · Deterministic Risk Engine*
+
+
+### PPT link
+
+https://gamma.app/docs/BrandShield-AI-xb0wfphoj40w8si
