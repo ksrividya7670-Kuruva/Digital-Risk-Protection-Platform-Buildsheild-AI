@@ -2,8 +2,10 @@
 // relative URLs so the Next.js rewrite proxy handles dev traffic correctly.
 const API_BASE = (process.env.NEXT_PUBLIC_API_BASE_URL ?? "").replace(/\/$/, "");
 
-// Static mode: set NEXT_PUBLIC_STATIC_MODE=true for GitHub Pages builds
-const STATIC_MODE = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+// Static mode: active for GitHub Pages or when no backend URL is set (standalone preview)
+const STATIC_MODE =
+  process.env.NEXT_PUBLIC_STATIC_MODE === "true" ||
+  !process.env.NEXT_PUBLIC_API_BASE_URL;
 
 export type RiskLevel = "CRITICAL" | "HIGH" | "MEDIUM" | "LOW";
 export type CandidateType = "SOCIAL_PROFILE" | "MOBILE_APP";

@@ -35,7 +35,7 @@ export default function AnalyticsPage() {
       setTrends(trend);
       setCandidates(candidatePage.items);
       const candidateDetails = await Promise.all(
-        candidatePage.items.slice(0, 30).map((candidate) => api.candidate(candidate.id)),
+        candidatePage.items.slice(0, 30).map((candidate: Candidate) => api.candidate(candidate.id)),
       );
       const totals: Record<string, { total: number; max: number }> = {};
       candidateDetails.forEach((detail) => {

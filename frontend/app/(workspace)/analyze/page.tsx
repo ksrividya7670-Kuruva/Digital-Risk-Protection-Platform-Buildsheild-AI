@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api, ApiError, type RiskLevel } from "@/lib/api";
+import { api, ApiError, type Candidate, type RiskLevel } from "@/lib/api";
 import { notify } from "@/lib/ui";
 import { PageHeading, Panel, RiskBadge } from "@/components/ui";
 
@@ -234,7 +234,7 @@ export default function AnalyzePage() {
       const candidatesPage = await api.candidates({ page_size: 100 });
       const matchType = result.entity_type === "SOCIAL_PROFILE" ? "SOCIAL_PROFILE" : "MOBILE_APP";
       const candidate =
-        candidatesPage.items.find(c => c.candidate_type === matchType) ??
+        candidatesPage.items.find((c: Candidate) => c.candidate_type === matchType) ??
         candidatesPage.items[0];
 
       if (!candidate) throw new Error("No candidates available — seed the demo data first.");

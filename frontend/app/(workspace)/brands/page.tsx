@@ -18,7 +18,7 @@ export default function BrandsPage() {
       const rows = await api.brands();
       setBrands(rows);
       const summaryRows = await Promise.all(
-        rows.map(async (brand) => [brand.id, await api.brandSummary(brand.id)] as const),
+        rows.map(async (brand: Brand) => [brand.id, await api.brandSummary(brand.id)] as const),
       );
       setSummaries(Object.fromEntries(summaryRows));
     } catch (caught) {

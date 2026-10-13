@@ -41,7 +41,7 @@ export default function CandidateInvestigationPage() {
         api.cases({ page: 1, page_size: 100 }),
       ]);
       setCandidate({ ...detail, website_url: safeWebUrl(detail.website_url) });
-      setCases(casePage.items.filter((record) => record.candidate_id === id));
+      setCases(casePage.items.filter((record: CaseRecord) => record.candidate_id === id));
     } catch (caught) {
       setError(caught instanceof ApiError ? caught.message : "Unable to load candidate investigation.");
     } finally { setLoading(false); }

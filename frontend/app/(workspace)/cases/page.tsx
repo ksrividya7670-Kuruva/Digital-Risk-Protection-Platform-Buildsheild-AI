@@ -74,7 +74,7 @@ function CaseModal({ record, onClose }: { record: CaseRecord; onClose: () => voi
   const [error, setError] = useState("");
   useEffect(() => {
     let active = true;
-    api.case(record.id).then((item) => { if (active) setDetail(item); }).catch((caught: unknown) => {
+    api.case(record.id).then((item: CaseRecord) => { if (active) setDetail(item); }).catch((caught: unknown) => {
       if (active) setError(caught instanceof Error ? caught.message : "Could not load case details.");
     });
     return () => { active = false; };

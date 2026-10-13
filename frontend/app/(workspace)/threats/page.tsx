@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { api, ApiError, type Candidate, type RiskLevel } from "@/lib/api";
+import { api, ApiError, type Candidate, type RiskLevel, type Signal } from "@/lib/api";
 import { displayName, formatDate } from "@/lib/ui";
 import { ErrorState, LoadingState, PageHeading, Panel, RiskBadge } from "@/components/ui";
 
@@ -76,7 +76,7 @@ export default function ThreatQueuePage() {
     Promise.all(visibleIds ? visibleIds.split(",").map(async (candidateId) => {
       try {
         const detail = await api.candidate(candidateId);
-        return [candidateId, detail.signals.filter((signal) => signal.weighted_score > 0).length] as const;
+        return [candidateId, detail.signals.filter((signal: Signal) => signal.weighted_score > 0).length] as const;
       } catch (caught) {
         if (caught instanceof ApiError && caught.status === 404) {
           throw new Error(`Candidate ${candidateId} was removed while loading its signal breakdown.`);

@@ -1,5 +1,6 @@
-/** @type {import('next').NextConfig} */
-const isStatic = process.env.NEXT_PUBLIC_STATIC_MODE === "true";
+// Only enable static export with basePath for GitHub Pages (not Vercel)
+const isStaticExport =
+  process.env.NEXT_PUBLIC_STATIC_MODE === "true" && !process.env.VERCEL;
 
 const repoName = process.env.GITHUB_REPOSITORY
   ? `/${process.env.GITHUB_REPOSITORY.split("/")[1]}`
@@ -7,7 +8,7 @@ const repoName = process.env.GITHUB_REPOSITORY
 
 const nextConfig = {
   // Static export for GitHub Pages
-  ...(isStatic ? {
+  ...(isStaticExport ? {
     output: "export",
     basePath: repoName,
     assetPrefix: `${repoName}/`,
